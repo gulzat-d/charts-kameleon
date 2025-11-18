@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import {
 	ComposedChart,
 	Line,
@@ -34,7 +35,7 @@ interface ConversionChartProps {
 	yDomain: [number, number];
 	lineStyle: LineStyle;
 	theme: Theme;
-	chartRef: React.RefObject<HTMLDivElement>;
+	chartRef: RefObject<HTMLDivElement | null>;
 }
 
 const ConversionChart = ({
