@@ -8,7 +8,6 @@ import {
 	Tooltip,
 	ResponsiveContainer,
 	Legend,
-	Brush,
 } from 'recharts';
 import type { TooltipContentProps } from 'recharts';
 import type {
@@ -22,16 +21,10 @@ import { ChartTooltip } from './ChartTooltip';
 import styles from './chart.module.css';
 import type { LineStyle } from './LineStyleSelector';
 import type { Theme } from './ThemeToggle';
-import type { ZoomRange } from './Chart';
 
 type RechartsTooltipProps = TooltipContentProps<ValueType, NameType>;
 
 const PALETTE = ['#3366CC', '#DC3912', '#109618', '#FF9900', '#990099'];
-
-interface BrushRange {
-	startIndex?: number;
-	endIndex?: number;
-}
 
 interface ConversionChartProps {
 	data: DataRow[];
@@ -41,8 +34,6 @@ interface ConversionChartProps {
 	yDomain: [number, number];
 	lineStyle: LineStyle;
 	theme: Theme;
-	xRange: ZoomRange | null;
-	onZoomChange: (range: ZoomRange | null) => void;
 	chartRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -54,28 +45,11 @@ const ConversionChart = ({
 	yDomain,
 	lineStyle,
 	theme,
-	xRange,
-	onZoomChange,
 	chartRef,
 }: ConversionChartProps) => {
 	const axisColor = theme === 'dark' ? '#e5e7eb' : '#4b5563';
 	const gridColor = theme === 'dark' ? '#4b5563' : '#e5e7eb';
 	const bgColor = theme === 'dark' ? '#111827' : '#ffffff';
-
-	const handleBrushChange = (range: BrushRange | undefined) => {
-		if (
-			range &&
-			typeof range.startIndex === 'number' &&
-			typeof range.endIndex === 'number'
-		) {
-			onZoomChange({
-				startIndex: range.startIndex,
-				endIndex: range.endIndex,
-			});
-		} else {
-			onZoomChange(null);
-		}
-	};
 
 	const renderSeries = () =>
 		variations.map((variation, index) => {
@@ -151,14 +125,6 @@ const ConversionChart = ({
 						)}
 					/>
 					<Legend />
-					<Brush
-						dataKey="label"
-						height={24}
-						stroke={axisColor}
-						startIndex={xRange?.startIndex}
-						endIndex={xRange?.endIndex}
-						onChange={handleBrushChange}
-					/>
 
 					{renderSeries()}
 				</ComposedChart>

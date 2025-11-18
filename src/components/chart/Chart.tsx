@@ -19,11 +19,6 @@ export interface ChartProps {
 	data: RawDayEntry[];
 }
 
-export interface ZoomRange {
-	startIndex: number;
-	endIndex: number;
-}
-
 const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 	const variations: Variation[] = useMemo(
 		() => normalizeVariations(rawVariations),
@@ -45,7 +40,6 @@ const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 	);
 	const [lineStyle, setLineStyle] = useState<LineStyle>('line');
 	const [theme, setTheme] = useState<Theme>('light');
-	const [xRange, setXRange] = useState<ZoomRange | null>(null);
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,16 +53,7 @@ const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 	);
 	const rows = mode === 'day' ? dayRows : weekRows;
 
-	const rowsForDomain = useMemo(() => {
-		if (!xRange) {
-			return rows;
-		}
-		const start = Math.max(0, xRange.startIndex);
-		const end = Math.min(rows.length - 1, xRange.endIndex);
-		return rows.slice(start, end + 1);
-	}, [rows, xRange]);
-
-	const yDomain = computeYDomain(rowsForDomain, selectedIds);
+	const yDomain = computeYDomain(rows, selectedIds);
 
 	const handleToggleVariation = (id: string) => {
 		setSelectedIds((prev) => {
@@ -85,11 +70,6 @@ const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 
 	const handleModeChange = (nextMode: Mode) => {
 		setMode(nextMode);
-		setXRange(null);
-	};
-
-	const handleResetZoom = () => {
-		setXRange(null);
 	};
 
 	const pageClass =
@@ -100,23 +80,14 @@ const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 	return (
 		<div className={pageClass}>
 			<div className={styles.controls}>
-				<ModeToggle mode={mode} onChange={handleModeChange} />
-				<LineStyleSelector lineStyle={lineStyle} onChange={setLineStyle} />
-				<ThemeToggle theme={theme} onChange={setTheme} />
 				<VariationSelector
 					variations={variations}
 					selectedIds={selectedIds}
 					onToggle={handleToggleVariation}
 				/>
-				<div className={styles.actions}>
-					<button
-						type="button"
-						className={styles.actionButton}
-						onClick={handleResetZoom}
-					>
-						Reset zoom
-					</button>
-				</div>
+				<ModeToggle mode={mode} onChange={handleModeChange} />
+				<ThemeToggle theme={theme} onChange={setTheme} />
+				<LineStyleSelector lineStyle={lineStyle} onChange={setLineStyle} />
 			</div>
 
 			<ConversionChart
@@ -127,8 +98,6 @@ const Chart = ({ variations: rawVariations, data }: ChartProps) => {
 				yDomain={yDomain}
 				lineStyle={lineStyle}
 				theme={theme}
-				xRange={xRange}
-				onZoomChange={setXRange}
 				chartRef={chartRef}
 			/>
 		</div>

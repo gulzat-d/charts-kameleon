@@ -1,7 +1,6 @@
+import { useState } from 'react';
 import type { Variation } from '../../types/abTest';
 import styles from './chart.module.css';
-
-const PALETTE = ['#3366CC', '#DC3912', '#109618', '#FF9900', '#990099'];
 
 interface VariationSelectorProps {
 	variations: Variation[];
@@ -13,29 +12,58 @@ export const VariationSelector = ({
 	variations,
 	selectedIds,
 	onToggle,
-}: VariationSelectorProps) => (
-	<div className={styles.variationSelector}>
-		{variations.map((variation, index) => {
-			const isSelected = selectedIds.includes(variation.id);
-			const color = PALETTE[index % PALETTE.length];
+}: VariationSelectorProps) => {
+	const [open, setOpen] = useState<boolean>(false);
 
-			return (
-				<button
-					key={variation.id}
-					type="button"
-					onClick={() => onToggle(variation.id)}
-					className={`${styles.variationButton} ${
-						isSelected ? styles.variationButtonActive : ''
-					}`}
-					style={
-						isSelected
-							? { backgroundColor: color, borderColor: color }
-							: { color, borderColor: color }
-					}
-				>
-					{variation.name}
-				</button>
-			);
-		})}
-	</div>
-);
+	const allSelected = selectedIds.length === variations.length;
+
+	const label = (() => {
+		if (allSelected) return 'All variations selected';
+		if (selectedIds.length === 0) return 'No variations selected';
+		if (selectedIds.length === 1) {
+			const variation = variations.find((item) => item.id === selectedIds[0]);
+			return variation?.name ?? '1 variation selected';
+		}
+		return `${selectedIds.length} variations selected`;
+	})();
+
+	const handleToggleOpen = () => {
+		setOpen((prev) => !prev);
+	};
+
+	const handleItemChange = (id: string) => {
+		onToggle(id);
+	};
+
+	return (
+		<div className={styles.dropdown}>
+			<button
+				type="button"
+				className={styles.dropdownButton}
+				onClick={handleToggleOpen}
+			>
+				<span>{label}</span>
+				<span className={styles.selectCaret} />
+			</button>
+
+			{open && (
+				<div className={styles.dropdownMenu}>
+					{variations.map((variation) => {
+						const checked = selectedIds.includes(variation.id);
+
+						return (
+							<label key={variation.id} className={styles.dropdownItem}>
+								<input
+									type="checkbox"
+									checked={checked}
+									onChange={() => handleItemChange(variation.id)}
+								/>
+								<span>{variation.name}</span>
+							</label>
+						);
+					})}
+				</div>
+			)}
+		</div>
+	);
+};
